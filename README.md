@@ -21,8 +21,8 @@ A sleek and efficient application for sending SMS messages in bulk, built with N
 
 1. Clone the repository:
    \`\`\`
-   git clone https://github.com/AnonX9/bulk_sms.git
-   cd bulk-sms-sender
+   git clone https://github.com/AnonX9/bulk_sms_sender.git
+   cd bulk_sms_sender
    \`\`\`
 
 2. Install dependencies:
