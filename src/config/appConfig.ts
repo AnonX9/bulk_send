@@ -1,5 +1,5 @@
 export const appConfig = {
-  smsTemplate: `Hello [Name],
+  smsTemplate: `Hello [First Name],
 We're thrilled to remind you that CodeConnect 2 is happening tomorrow! 🚀
 📅 Date: November 23
 ⏰ Time: 9:00 AM

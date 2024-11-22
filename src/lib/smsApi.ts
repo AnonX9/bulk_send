@@ -17,7 +17,7 @@ interface StatusResponse {
     reponsecode: number
     reponsedescription: string
     mobileno: string
-    messageid: string
+    messageid?: string
     status: string
   }[]
 }

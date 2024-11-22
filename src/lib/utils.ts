@@ -5,18 +5,39 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const validatePhoneNumber = (phone: string): { isValid: boolean; operator: string } => {
-  const cleanPhone = phone.replace(/\D/g, '');
+export const validatePhoneNumber = (phone: string): { isValid: boolean; operator: string; formattedPhone: string } => {
+  let cleanPhone = phone.replace(/\D/g, '');
   
-  const orangePattern = /((65[5-9][0-9]{6}$)|(69[0-9]{7}$)|(68[5-9][0-9]{6}$))/;
-  const mtnPattern = /((65[0-4][0-9]{6}$)|(67[0-9]{7}$)|(680[0-9]{6}$)|(68[1-4][0-9]{6}$))/;
+  // Remove leading 237 if present
+  if (cleanPhone.startsWith('237')) {
+    cleanPhone = cleanPhone.slice(3);
+  }
+
+  const orangePattern = /^6(9\d{7}|5[5-9]\d{6})$/;
+  const mtnPattern = /^6(7[678]\d{6}|50\d{6})$/;
   const nexttelPattern = /^66\d{7}$/;
   const camtelPattern = /^2\d{8}$/;
 
-  if (orangePattern.test(cleanPhone)) return { isValid: true, operator: 'Orange' };
-  if (mtnPattern.test(cleanPhone)) return { isValid: true, operator: 'MTN' };
-  if (nexttelPattern.test(cleanPhone)) return { isValid: true, operator: 'Nexttel' };
-  if (camtelPattern.test(cleanPhone)) return { isValid: true, operator: 'Camtel' };
+  let operator = 'Unknown';
+  let isValid = false;
 
-  return { isValid: false, operator: 'Unknown' };
+  if (orangePattern.test(cleanPhone)) {
+    isValid = true;
+    operator = 'Orange';
+  } else if (mtnPattern.test(cleanPhone)) {
+    isValid = true;
+    operator = 'MTN';
+  } else if (nexttelPattern.test(cleanPhone)) {
+    isValid = true;
+    operator = 'Nexttel';
+  } else if (camtelPattern.test(cleanPhone)) {
+    isValid = true;
+    operator = 'Camtel';
+  }
+
+  // Add 237 prefix to valid numbers
+  const formattedPhone = isValid ? `${cleanPhone}` : cleanPhone;
+
+  return { isValid, operator, formattedPhone };
 };
+

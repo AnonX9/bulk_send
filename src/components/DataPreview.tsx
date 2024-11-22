@@ -11,9 +11,9 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 
 interface Contact {
-  email: string
-  name: string
+  [key: string]: string
   phone: string
+  formattedPhone: string
   status: string
   operator: string
   messageId?: string
@@ -27,7 +27,20 @@ interface DataPreviewProps {
 export default function DataPreview({ data, fileName }: DataPreviewProps) {
   if (!data || data.length === 0) return null
 
-  const headers = ['Email', 'Name', 'Phone', 'Operator', 'Status']
+  // Filter out internal fields and ensure unique columns
+  const headers = Array.from(new Set(
+    Object.keys(data[0]).filter(key => 
+      !['phone', 'formattedPhone', 'messageId'].includes(key)
+    )
+  ))
+
+  // Ensure Phone is at the beginning and status and operator are at the end
+  const reorderedHeaders = [
+    'Phone',
+    ...headers.filter(h => !['status', 'operator', 'Phone'].includes(h)),
+    'operator',
+    'status'
+  ]
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -66,8 +79,10 @@ export default function DataPreview({ data, fileName }: DataPreviewProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              {headers.map((header) => (
-                <TableHead key={header}>{header}</TableHead>
+              {reorderedHeaders.map((header) => (
+                <TableHead key={header} className="capitalize">
+                  {header}
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>
@@ -79,19 +94,30 @@ export default function DataPreview({ data, fileName }: DataPreviewProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
-                <TableCell>{contact.email}</TableCell>
-                <TableCell>{contact.name}</TableCell>
-                <TableCell>{contact.phone}</TableCell>
-                <TableCell>
-                  <Badge className={getOperatorColor(contact.operator)}>
-                    {contact.operator}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getStatusColor(contact.status)}>
-                    {contact.status}
-                  </Badge>
-                </TableCell>
+                {reorderedHeaders.map((header) => (
+                  <TableCell key={header}>
+                    {header === 'operator' ? (
+                      <Badge className={getOperatorColor(contact[header])}>
+                        {contact[header]}
+                      </Badge>
+                    ) : header === 'status' ? (
+                      <Badge className={getStatusColor(contact[header])}>
+                        {contact[header]}
+                      </Badge>
+                    ) : header === 'Phone' ? (
+                      <>
+                        {contact.phone}
+                        {contact.formattedPhone !== contact.phone && (
+                          <span className="block text-xs text-muted-foreground">
+                            ({contact.formattedPhone})
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      contact[header]
+                    )}
+                  </TableCell>
+                ))}
               </motion.tr>
             ))}
           </TableBody>
