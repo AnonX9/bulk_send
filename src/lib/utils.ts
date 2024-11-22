@@ -16,7 +16,7 @@ export const validatePhoneNumber = (phone: string): { isValid: boolean; operator
   const orangePattern = /((65[5-9][0-9]{6}$)|(69[0-9]{7}$)|(68[5-9][0-9]{6}$))/;
   const mtnPattern = /((65[0-4][0-9]{6}$)|(67[0-9]{7}$)|(680[0-9]{6}$)|(68[1-4][0-9]{6}$))/;
   const nexttelPattern = /^66\d{7}$/;
-  const camtelPattern = /^2\d{8}$/;
+  const camtelPattern = /^62\d{7}$/;
 
   let operator = 'Unknown';
   let isValid = false;
