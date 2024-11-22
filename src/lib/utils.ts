@@ -13,8 +13,8 @@ export const validatePhoneNumber = (phone: string): { isValid: boolean; operator
     cleanPhone = cleanPhone.slice(3);
   }
 
-  const orangePattern = /^6(9\d{7}|5[5-9]\d{6})$/;
-  const mtnPattern = /^6(7[678]\d{6}|50\d{6})$/;
+  const orangePattern = /((65[5-9][0-9]{6}$)|(69[0-9]{7}$)|(68[5-9][0-9]{6}$))/;
+  const mtnPattern = /((65[0-4][0-9]{6}$)|(67[0-9]{7}$)|(680[0-9]{6}$)|(68[1-4][0-9]{6}$))/;
   const nexttelPattern = /^66\d{7}$/;
   const camtelPattern = /^2\d{8}$/;
 
