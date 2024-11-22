@@ -8,16 +8,19 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, XCircle } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { AlertCircle, XCircle, Send, RefreshCw, X, Upload } from 'lucide-react'
 import DataPreview from './DataPreview'
 import { sendSMS, filterDLR } from '@/lib/smsApi'
 import { appConfig } from '@/config/appConfig'
+import { validatePhoneNumber } from '@/lib/utils'
 
 interface Contact {
   email: string
   name: string
   phone: string
   status: string
+  operator: string
   messageId?: string
 }
 
@@ -35,6 +38,7 @@ export default function FileImporter() {
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null)
   const [successfulSends, setSuccessfulSends] = useState(0)
   const [apiError, setApiError] = useState<string | null>(null)
+  const [selectedOperator, setSelectedOperator] = useState<string | null>(null)
 
   useEffect(() => {
     const savedState = localStorage.getItem('bulkSMSAppState')
@@ -149,30 +153,28 @@ export default function FileImporter() {
     const name = rowData['name'] || rowData['first name'] || ''
     const phone = rowData['phone'] || rowData['phone number'] || ''
 
-    const cleanPhone = phone.replace(/\D/g, '')
-    const isValidPhone = /^6\d{8}$/.test(cleanPhone)
-
-    if (!isValidPhone) {
-      console.warn(`Invalid phone number: ${phone}`)
-    }
+    const { isValid, operator } = validatePhoneNumber(phone)
 
     return {
       email: email.toLowerCase(),
       name: name,
-      phone: isValidPhone ? cleanPhone : `Invalid: ${phone}`,
-      status: 'Not sent'
+      phone: isValid ? phone : `Invalid: ${phone}`,
+      status: 'Not sent',
+      operator: operator
     }
   }
 
-  const handleSendToAll = async () => {
-    if (!data) return
+  const handleSend = async () => {
+    if (!data || !selectedOperator) return
 
     setIsSending(true)
     setSendProgress(0)
     setSuccessfulSends(0)
     setApiError(null)
-    const validContacts = data.filter(
-      contact => typeof contact.phone === 'string' && !contact.phone.startsWith('Invalid')
+
+    const validContacts = data.filter(contact => 
+      (selectedOperator === 'All' || contact.operator === selectedOperator) && 
+      !contact.phone.startsWith('Invalid')
     )
 
     try {
@@ -231,7 +233,7 @@ export default function FileImporter() {
     try {
       if (data) {
         const now = new Date()
-        const startDate = new Date(now.getTime() - 1 * 60 * 60 * 1000) // 24 hours ago
+        const startDate = new Date(now.getTime() - 1 * 60 * 60 * 1000) // 1 hour ago
         const response = await filterDLR(
           startDate.toISOString().split('T')[0] + ' 00:00:00',
           now.toISOString().split('T')[0] + ' 23:59:59'
@@ -283,6 +285,7 @@ export default function FileImporter() {
     setSendProgress(0)
     setSuccessfulSends(0)
     setApiError(null)
+    setSelectedOperator(null)
   }
 
   return (
@@ -336,6 +339,7 @@ export default function FileImporter() {
                 htmlFor="file-upload"
                 className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90 transition-colors"
               >
+                <Upload className="w-4 h-4 mr-2" />
                 Choose a file
               </Label>
               <span className="ml-3">{fileName || 'No file chosen'}</span>
@@ -350,16 +354,46 @@ export default function FileImporter() {
             transition={{ duration: 0.5 }}
           >
             <DataPreview data={data} fileName={fileName} />
-            <div className="flex gap-4 mt-4">
-              <Button onClick={handleSendToAll} disabled={isSending} className="flex-1">
-                {isSending ? 'Sending...' : 'Send SMS to All'}
-              </Button>
-              <Button onClick={checkStatus} className="flex-1">
-                Refresh Status
-              </Button>
-              <Button onClick={handleCancel} variant="outline" className="flex-1">
-                Cancel
-              </Button>
+            <div className="mt-6 space-y-4">
+              <div className="flex gap-4">
+                <Select onValueChange={(value) => setSelectedOperator(value)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select operator" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All Operators</SelectItem>
+                    <SelectItem value="Orange">Orange</SelectItem>
+                    <SelectItem value="MTN">MTN</SelectItem>
+                    <SelectItem value="Nexttel">Nexttel</SelectItem>
+                    <SelectItem value="Camtel">Camtel</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={handleSend}
+                  disabled={isSending || !selectedOperator}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  Send SMS
+                </Button>
+              </div>
+              <div className="flex gap-4">
+                <Button
+                  onClick={checkStatus}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh Status
+                </Button>
+                <Button
+                  onClick={handleCancel}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Cancel
+                </Button>
+              </div>
             </div>
             {isSending && (
               <div className="mt-4">

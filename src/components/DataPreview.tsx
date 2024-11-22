@@ -15,6 +15,7 @@ interface Contact {
   name: string
   phone: string
   status: string
+  operator: string
   messageId?: string
 }
 
@@ -26,7 +27,7 @@ interface DataPreviewProps {
 export default function DataPreview({ data, fileName }: DataPreviewProps) {
   if (!data || data.length === 0) return null
 
-  const headers = ['Email', 'Name', 'Phone', 'Status']
+  const headers = ['Email', 'Name', 'Phone', 'Operator', 'Status']
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -38,6 +39,21 @@ export default function DataPreview({ data, fileName }: DataPreviewProps) {
         return 'bg-yellow-500'
       case 'FAILED':
         return 'bg-red-700'
+      default:
+        return 'bg-gray-500'
+    }
+  }
+
+  const getOperatorColor = (operator: string) => {
+    switch (operator) {
+      case 'Orange':
+        return 'bg-orange-500'
+      case 'MTN':
+        return 'bg-yellow-500'
+      case 'Nexttel':
+        return 'bg-blue-500'
+      case 'Camtel':
+        return 'bg-green-500'
       default:
         return 'bg-gray-500'
     }
@@ -67,6 +83,11 @@ export default function DataPreview({ data, fileName }: DataPreviewProps) {
                 <TableCell>{contact.name}</TableCell>
                 <TableCell>{contact.phone}</TableCell>
                 <TableCell>
+                  <Badge className={getOperatorColor(contact.operator)}>
+                    {contact.operator}
+                  </Badge>
+                </TableCell>
+                <TableCell>
                   <Badge className={getStatusColor(contact.status)}>
                     {contact.status}
                   </Badge>
@@ -82,3 +103,4 @@ export default function DataPreview({ data, fileName }: DataPreviewProps) {
     </div>
   )
 }
+
